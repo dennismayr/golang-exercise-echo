@@ -2,14 +2,15 @@ package main
 
 import (
 	"fmt"
+	"net/http"
+
 	"github.com/labstack/echo/v4"
 	// "github.com/labstack/echo/v4/middleware"
-	"net/http"
 )
 
-//Test function
+// Test function
 func hello(c echo.Context) error {
-	return c.String(http.StatusOK, "Hello, folks")
+	return c.String(http.StatusOK, "Hello from this new Echo server! Welcome!")
 }
 
 // Exercise: cats
@@ -34,7 +35,7 @@ func getCats(c echo.Context) error {
 	})
 }
 
-//Main program
+// Main program
 func main() {
 	fmt.Println("Welcome to this humble server")
 	e := echo.New()
@@ -43,6 +44,6 @@ func main() {
 	e.GET("/", hello)
 	e.GET("/cats/:data", getCats)
 
-	//Server start
+	// Server start
 	e.Start(":8000")
 }
