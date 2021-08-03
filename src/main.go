@@ -9,7 +9,7 @@ import (
 
 	// Echo framework
 	"github.com/labstack/echo/v4"
-	// "github.com/labstack/echo/v4/middleware"
+	"github.com/labstack/echo/v4/middleware"
 )
 
 // Test function
@@ -101,14 +101,40 @@ func addHamster(h echo.Context) error { // easier to write but a bit slower
 	return h.String(http.StatusOK, "We got your little hamster :)")
 }
 
+// Handler for `mainAdmin`
+func mainAdmin(c echo.Context) error {
+	return c.String(http.StatusOK, "Hooray, you are on the secret admin/main page!")
+}
+
 // Main program
 func main() {
 	fmt.Println("Welcome to this humble server")
 	e := echo.New()
 
+	// Grouping: Middleware exercise
+	g := e.Group("/admin") // group root
+
+	// Logging the server's interactions
+	g.Use(middleware.LoggerWithConfig(
+		middleware.LoggerConfig{
+			Format: `[${time_rfc3339}] | (${protocol}) ${status} ${method} ${host}${path} | ${latency_human}` + "\n",
+		})) // Format: `literal order, you can do whatever you want`
+
+	// Adding Basic Authentication to the `admin` group
+	g.Use(middleware.BasicAuth(
+		func(username, password string, c echo.Context) (bool, error) {
+			// Check DB if pw is valid
+			if username == "dmayr" && password == "1234" {
+				return true, nil
+			}
+			return false, nil
+		}))
+
 	// Routes
 	e.GET("/", hello)
 	e.GET("/cats/:data", getCats)
+	// `main` available under `/admin/main`
+	g.GET("/main", mainAdmin)
 
 	// Endpoint for posting
 	e.POST("/cats", addCat)
