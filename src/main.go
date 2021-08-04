@@ -106,22 +106,41 @@ func mainAdmin(c echo.Context) error {
 	return c.String(http.StatusOK, "Hooray, you are on the secret admin/main page!")
 }
 
+//////////////////////////////////////////////////////////////////////
+//                            Middlewares                           //
+//////////////////////////////////////////////////////////////////////
+
+func ServerHeader(next echo.HandlerFunc) echo.HandlerFunc {
+	// HandlerFunc defines a function to serve HTTP requests
+	return func(c echo.Context) error {
+		// c.Response().Header().Set(echo.HeaderServer, "NinoHeaders/1.0")
+		c.Response().Header().Set("InterceptedBy", "NinoHeaders/1.0")
+		// the new header will be "NinoHeaders/1.0"
+		return next(c)
+	}
+}
+
+//////////////////////////////////////////////////////////////////////
+
 // Main program
 func main() {
 	fmt.Println("Welcome to this humble server")
-	e := echo.New()
+	echoInstance := echo.New()
+
+	// Adding the ServerHeader to the Group
+	echoInstance.Use(ServerHeader)
 
 	// Grouping: Middleware exercise
-	g := e.Group("/admin") // group root
+	adminGroup := echoInstance.Group("/admin") // group root
 
 	// Logging the server's interactions
-	g.Use(middleware.LoggerWithConfig(
+	adminGroup.Use(middleware.LoggerWithConfig(
 		middleware.LoggerConfig{
 			Format: `[${time_rfc3339}] | (${protocol}) ${status} ${method} ${host}${path} | ${latency_human}` + "\n",
 		})) // Format: `literal order, you can do whatever you want`
 
 	// Adding Basic Authentication to the `admin` group
-	g.Use(middleware.BasicAuth(
+	adminGroup.Use(middleware.BasicAuth(
 		func(username, password string, c echo.Context) (bool, error) {
 			// Check DB if pw is valid
 			if username == "dmayr" && password == "1234" {
@@ -131,16 +150,16 @@ func main() {
 		}))
 
 	// Routes
-	e.GET("/", hello)
-	e.GET("/cats/:data", getCats)
+	echoInstance.GET("/", hello)
+	echoInstance.GET("/cats/:data", getCats)
 	// `main` available under `/admin/main`
-	g.GET("/main", mainAdmin)
+	adminGroup.GET("/main", mainAdmin)
 
 	// Endpoint for posting
-	e.POST("/cats", addCat)
-	e.POST("/dogs", addDog)
-	e.POST("/hamsters", addHamster)
+	echoInstance.POST("/cats", addCat)
+	echoInstance.POST("/dogs", addDog)
+	echoInstance.POST("/hamsters", addHamster)
 
 	// Server start
-	e.Start(":8000")
+	echoInstance.Start(":8000")
 }
