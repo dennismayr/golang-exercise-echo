@@ -6,6 +6,8 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"strings"
+	"time"
 
 	// Echo framework
 	"github.com/labstack/echo/v4"
@@ -106,6 +108,29 @@ func mainAdmin(c echo.Context) error {
 	return c.String(http.StatusOK, "Hooray, you are on the secret admin/main page!")
 }
 
+// Handler for `mainCookie`
+func mainCookie(c echo.Context) error {
+	return c.String(http.StatusOK, "You've come to the secret cookie place :)")
+}
+
+// Handler for login
+func login(c echo.Context) error {
+	username := c.QueryParam("username")
+	password := c.QueryParam("password")
+	// Check user and password against the DB, in the future
+	if username == "dmayr" && password == "1234" {
+		cookie := &http.Cookie{}
+		// cookie := new(http.Cookie)
+		cookie.Name = "sessionID"
+		cookie.Value = "ninoCookie_id"
+		cookie.Expires = time.Now().Add(48 * time.Hour)
+		// c.SetCookie(cookie *http.Cookie)
+		c.SetCookie(cookie)
+		return c.String(http.StatusOK, "You were logged in successfully.")
+	}
+	return c.String(http.StatusUnauthorized, "Your username or password don't match.")
+}
+
 //////////////////////////////////////////////////////////////////////
 //                            Middlewares                           //
 //////////////////////////////////////////////////////////////////////
@@ -117,6 +142,24 @@ func ServerHeader(next echo.HandlerFunc) echo.HandlerFunc {
 		c.Response().Header().Set("InterceptedBy", "NinoHeaders/1.0")
 		// the new header will be "NinoHeaders/1.0"
 		return next(c)
+	}
+}
+
+func checkCookie(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		cookie, err := c.Cookie("sessionID")
+		if err != nil {
+			// Handler: print a better, readable, custom string instead of the bare error message, by matching and replacing it:
+			if strings.Contains(err.Error(), "named cookie not present") {
+				return c.String(http.StatusUnauthorized, "You don't seem to have any cookies, fam.")
+			}
+			log.Println(err)
+			return err
+		}
+		if cookie.Value == "ninoCookie_id" {
+			return next(c)
+		}
+		return c.String(http.StatusUnauthorized, "You don't seem to have the right cookie.")
 	}
 }
 
@@ -132,6 +175,9 @@ func main() {
 
 	// Grouping: Middleware exercise
 	adminGroup := echoInstance.Group("/admin") // group root
+
+	// Group for Cookies
+	cookieGroup := echoInstance.Group("/cookie")
 
 	// Logging the server's interactions
 	adminGroup.Use(middleware.LoggerWithConfig(
@@ -149,11 +195,20 @@ func main() {
 			return false, nil
 		}))
 
+	// HANDLERS
+
+	cookieGroup.Use(checkCookie)
+
+	// `main` available under `/admin/main`
+	adminGroup.GET("/main", mainAdmin)
+
+	// Cookie implementation
+	cookieGroup.GET("/main", mainCookie)
+
 	// Routes
 	echoInstance.GET("/", hello)
 	echoInstance.GET("/cats/:data", getCats)
-	// `main` available under `/admin/main`
-	adminGroup.GET("/main", mainAdmin)
+	echoInstance.GET("/login", login)
 
 	// Endpoint for posting
 	echoInstance.POST("/cats", addCat)
