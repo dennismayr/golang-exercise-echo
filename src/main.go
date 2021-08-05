@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	// Echo framework
+	"github.com/golang-jwt/jwt/v4"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )
@@ -57,6 +57,12 @@ type Dog struct {
 type Hamster struct {
 	Name string `json:"name"`
 	Type string `json:"type"`
+}
+
+// struct for the JWT implementation
+type JwtClaims struct {
+	Name string `json:"name"`
+	jwt.StandardClaims
 }
 
 // POST handler for `cats`
@@ -126,7 +132,19 @@ func login(c echo.Context) error {
 		cookie.Expires = time.Now().Add(48 * time.Hour)
 		// c.SetCookie(cookie *http.Cookie)
 		c.SetCookie(cookie)
-		return c.String(http.StatusOK, "You were logged in successfully.")
+
+		// OK message as string:
+		// return c.String(http.StatusOK, "You were logged in successfully.")
+		// OK message in JSON:
+		token, err := createJwtToken()
+		if err != nil {
+			log.Printf("Error when creating JWT token: %s", err)
+			return c.String(http.StatusInternalServerError, "Something has gone wrong")
+		}
+		return c.JSON(http.StatusOK, map[string]string{
+			"message": "You were logged in successfully.",
+			"token":   token,
+		})
 	}
 	return c.String(http.StatusUnauthorized, "Your username or password don't match.")
 }
@@ -161,6 +179,23 @@ func checkCookie(next echo.HandlerFunc) echo.HandlerFunc {
 		}
 		return c.String(http.StatusUnauthorized, "You don't seem to have the right cookie.")
 	}
+}
+
+// JWT Token
+func createJwtToken() (string, error) {
+	claims := JwtClaims{
+		"dmayr",
+		jwt.StandardClaims{
+			Id:        "main_user_id",
+			ExpiresAt: time.Now().Add(24 * time.Hour).Unix(),
+		},
+	}
+	rawToken := jwt.NewWithClaims(jwt.SigningMethodHS512, claims)
+	token, err := rawToken.SignedString([]byte("mySecret")) // this should be a private key, never hardcode a string like here
+	if err != nil {
+		return "", err
+	}
+	return token, nil
 }
 
 //////////////////////////////////////////////////////////////////////
