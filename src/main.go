@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/golang-jwt/jwt/v4"
+	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )
@@ -121,7 +121,13 @@ func mainCookie(c echo.Context) error {
 
 // Handler for mainJwt
 func mainJwt(c echo.Context) error {
-	return c.String(http.StatusOK, "You are at the Top Secret JWT section :o")
+	user := c.Get("user")
+	token := user.(*jwt.Token)
+	claims := token.Claims.(jwt.MapClaims)
+
+	log.Println("User name: ", claims["name"], "User ID: ", claims["jti"])
+
+	return c.String(http.StatusOK, "You are at the Top Secret JWT section :)")
 }
 
 // Handler for login
