@@ -119,6 +119,11 @@ func mainCookie(c echo.Context) error {
 	return c.String(http.StatusOK, "You've come to the secret cookie place :)")
 }
 
+// Handler for mainJwt
+func mainJwt(c echo.Context) error {
+	return c.String(http.StatusOK, "You are at the Top Secret JWT section :o")
+}
+
 // Handler for login
 func login(c echo.Context) error {
 	username := c.QueryParam("username")
@@ -181,7 +186,7 @@ func checkCookie(next echo.HandlerFunc) echo.HandlerFunc {
 	}
 }
 
-// JWT Token
+// JWT Token: external, yet accepted middleware
 func createJwtToken() (string, error) {
 	claims := JwtClaims{
 		"dmayr",
@@ -208,11 +213,15 @@ func main() {
 	// Adding the ServerHeader to the Group
 	echoInstance.Use(ServerHeader)
 
-	// Grouping: Middleware exercise
+	// GROUPS
+	// Middleware exercise
 	adminGroup := echoInstance.Group("/admin") // group root
 
-	// Group for Cookies
+	// Cookies
 	cookieGroup := echoInstance.Group("/cookie")
+
+	// JWT:
+	jwtGroup := echoInstance.Group("/jwt")
 
 	// Logging the server's interactions
 	adminGroup.Use(middleware.LoggerWithConfig(
@@ -230,15 +239,20 @@ func main() {
 			return false, nil
 		}))
 
+	// JWT enforcing
+	jwtGroup.Use(middleware.JWTWithConfig(middleware.JWTConfig{
+		SigningMethod: "HS512",
+		SigningKey:    []byte("mySecret"),
+	}))
+
 	// HANDLERS
-
 	cookieGroup.Use(checkCookie)
-
 	// `main` available under `/admin/main`
 	adminGroup.GET("/main", mainAdmin)
-
 	// Cookie implementation
 	cookieGroup.GET("/main", mainCookie)
+	// JWT handler
+	jwtGroup.GET("/main", mainJwt)
 
 	// Routes
 	echoInstance.GET("/", hello)
