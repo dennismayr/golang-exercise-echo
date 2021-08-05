@@ -3,6 +3,6 @@ module blueBot_go_webserver_echo
 go 1.16
 
 require (
-	github.com/dgrijalva/jwt-go v3.2.0+incompatible
-	github.com/labstack/echo/v4 v4.4.0
+	github.com/golang-jwt/jwt v3.2.2+incompatible
+	github.com/labstack/echo/v4 v4.5.0
 )
