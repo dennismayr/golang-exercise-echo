@@ -249,6 +249,9 @@ func main() {
 	jwtGroup.Use(middleware.JWTWithConfig(middleware.JWTConfig{
 		SigningMethod: "HS512",
 		SigningKey:    []byte("mySecret"),
+		// Restriction scheme for Authorization
+		TokenLookup: "header:MyHeader", // instead of default "Authorization"
+		AuthScheme:  "iLoveGatitos",    // Instead of default "Bearer"
 	}))
 
 	// HANDLERS
