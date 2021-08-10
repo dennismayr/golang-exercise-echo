@@ -7,10 +7,10 @@ $.jribbble.setToken('YOUR-TOKEN_GOES_HERE');
 //Replace srizon with your dribbble username
 $.jribbble.users('srizon').shots({
     per_page: 12
-}).then(function (shots) {
+}).then(function(shots) {
     var html = [];
 
-    shots.forEach(function (shot) {
+    shots.forEach(function(shot) {
         html.push('<li class="col-md-3 col-sm-4 shots--shot">');
         html.push('<a href="' + shot.html_url + '" target="_blank">');
         html.push('<img src="' + shot.images.normal + '">');
@@ -25,7 +25,7 @@ $.jribbble.users('srizon').shots({
 //Follow button
 //========================
 
-$(function () {
+$(function() {
 
 
     // SOME VARIABLES
@@ -38,7 +38,7 @@ $(function () {
     $(button).wrap('<div class="dribbble-follow-button" />').removeClass().addClass('label').html('<i></i> ' + label);
 
     // REQUESTS USER'S DATA FROM DRIBBBLE'S API AND APPENDS IT
-    $.getJSON('http://api.dribbble.com/players/' + username + '?callback=?', function (data) {
+    $.getJSON('http://api.dribbble.com/players/' + username + '?callback=?', function(data) {
         $(button).wrap('<div class="dribbble-follow-button ' + disableCount + '" />')
             .parent().html('<a class="label" href="http://dribbble.com/' + username + '" target="_blank"><i></i>' + label + '</a><a class="count" href="http://dribbble.com/' + username + '/followers" target="_blank"><i></i><u></u>' + data.followers_count + ' followers</a>');
         $(button + '.disableCount').find('.count').remove();
@@ -50,7 +50,7 @@ $(function () {
 //========================
 //PRELOADER
 //========================
-$(window).load(function () { // makes sure the whole site is loaded
+$(window).load(function() { // makes sure the whole site is loaded
     $('#status').fadeOut(); // will first fade out the loading animation
     $('#preloader').delay(350).fadeOut('slow');
     // will fade out the white DIV that covers the website.
@@ -73,8 +73,8 @@ $("html").niceScroll({
 //========================
 //SMOOTHSCROLL
 //========================
-$(function () {
-    $('a[href*=#]:not([href=#])').click(function () {
+$(function() {
+    $('a[href*=#]:not([href=#])').click(function() {
         if (location.pathname.replace(/^\//, '') == this.pathname.replace(/^\//, '') && location.hostname == this.hostname) {
             var target = $(this.hash);
             target = target.length ? target : $('[name=' + this.hash.slice(1) + ']');
@@ -92,15 +92,15 @@ $(function () {
 //========================
 //NAVBAR
 //========================
-(function ($) {
-    $(document).ready(function () {
+(function($) {
+    $(document).ready(function() {
 
         // hide .navbar first
         $(".navbar").hide();
 
         // fade in .navbar
-        $(function () {
-            $(window).scroll(function () {
+        $(function() {
+            $(window).scroll(function() {
 
                 // set distance user needs to scroll before we start fadeIn
                 if ($(this).scrollTop() > 40) {
@@ -126,9 +126,9 @@ $(function () {
 //icon hover effect
 //========================
 $('#services img').hover(
-    function () {
+    function() {
         $(this).addClass('animated pulse')
     },
-    function () {
+    function() {
         $(this).removeClass('animated pulse')
     })
