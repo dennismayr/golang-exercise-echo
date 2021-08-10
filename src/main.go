@@ -152,6 +152,14 @@ func login(c echo.Context) error {
 			log.Printf("Error when creating JWT token: %s", err)
 			return c.String(http.StatusInternalServerError, "Something has gone wrong")
 		}
+
+		// JWTCookie implementation
+		jwtCookie := &http.Cookie{}
+		jwtCookie.Name = "JWTCookie"
+		jwtCookie.Value = token
+		jwtCookie.Expires = time.Now().Add(48 * time.Hour)
+		c.SetCookie(jwtCookie)
+
 		return c.JSON(http.StatusOK, map[string]string{
 			"message": "You were logged in successfully.",
 			"token":   token,
@@ -250,8 +258,7 @@ func main() {
 		SigningMethod: "HS512",
 		SigningKey:    []byte("mySecret"),
 		// Restriction scheme for Authorization
-		TokenLookup: "header:MyHeader", // instead of default "Authorization"
-		AuthScheme:  "iLoveGatitos",    // Instead of default "Bearer"
+		TokenLookup: "cookie:JWTCookie", // instead of default "Authorization"
 	}))
 
 	// HANDLERS
@@ -263,8 +270,11 @@ func main() {
 	// JWT handler
 	jwtGroup.GET("/main", mainJwt)
 
+	//
+	echoInstance.Use(middleware.Static("./static/"))
+
 	// Routes
-	echoInstance.GET("/", hello)
+	echoInstance.GET("/hello", hello)
 	echoInstance.GET("/cats/:data", getCats)
 	echoInstance.GET("/login", login)
 
