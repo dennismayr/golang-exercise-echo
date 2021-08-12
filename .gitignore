@@ -15,6 +15,7 @@
 # vendor/
 
 # Custom
+main
 !**/main/
 *.#*
 .projectile
