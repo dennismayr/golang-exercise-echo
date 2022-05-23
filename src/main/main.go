@@ -1,8 +1,9 @@
 package main
 
 import (
-	"blueBot_go_webserver_echo/src/router"
 	"fmt"
+
+	"blueBot_go_webserver_echo/src/router"
 )
 
 // Main program

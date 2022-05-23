@@ -1,9 +1,10 @@
 package webserver
 
 import (
-	"blueBot_go_webserver_echo/src/router"
 	"log"
 	"sync"
+
+	"blueBot_go_webserver_echo/src/router"
 
 	"github.com/labstack/echo/v4"
 )
@@ -25,15 +26,13 @@ func Instance() *WebServer {
 	return ws
 }
 
-func (w *WebServer) Start(){
+func (w *WebServer) Start() {
 	var wg sync.WaitGroup
 	wg.Add(1)
-	go func(){
+	go func() {
 		defer wg.Done()
-		log.Println(Starting HTTP server on port :8000)
+		log.Println("Starting HTTP server on port: ", 8000)
 		log.Fatal(w.router.Start(":8000"))
-		
 	}()
 	wg.Wait()
 }
-
